@@ -9,10 +9,13 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 
 import com.parse.ParseException;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.util.Collections.shuffle;
 
 /**
  * Created by jack on 15. 8. 14.
@@ -20,6 +23,10 @@ import java.util.List;
 public class MainActivity extends FragmentActivity {
 
     private ViewPager mPager;
+
+    private Integer index;
+    private static Integer LIMIT = 15;
+    private static Integer MARGIN = 5;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -35,6 +42,15 @@ public class MainActivity extends FragmentActivity {
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
+        mPager.setOffscreenPageLimit(5);
+
+        ParseInstallation current = ParseInstallation.getCurrentInstallation();
+
+        if (current.get("index") == null) {
+            index = 0;
+        } else {
+            index = (Integer) current.get("index");
+        }
 
         load();
     }
@@ -44,7 +60,7 @@ public class MainActivity extends FragmentActivity {
 
             @Override
             protected List<ParseObject> doInBackground(Void... params) {
-                ParseQuery<ParseObject> query = ParseQuery.getQuery("images");
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("images").setSkip(index).setLimit(LIMIT);
 
                 try {
                     return query.find();
@@ -57,8 +73,29 @@ public class MainActivity extends FragmentActivity {
 
             @Override
             protected void onPostExecute(List<ParseObject> list) {
+
+                if (list.isEmpty()){
+                    index = 0;
+                    load();
+                    return;
+                } else {
+                    index = index + list.size();
+                }
+
+                recordIndex();
+
                 super.onPostExecute(list);
-                mPagerAdapter.setList(list);
+                mPagerAdapter.appendList(list);
+            }
+
+            private void recordIndex() {
+                try {
+                    ParseInstallation current = ParseInstallation.getCurrentInstallation();
+                    current.put("index", index);
+                    current.save();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         };
         task.execute();
@@ -69,7 +106,9 @@ public class MainActivity extends FragmentActivity {
         private List<ParseObject> mList = new LinkedList<ParseObject>();
 
         public ScreenSlidePagerAdapter(FragmentManager fm) {
+
             super(fm);
+
         }
 
         public void setList(List<ParseObject> list) {
@@ -77,8 +116,19 @@ public class MainActivity extends FragmentActivity {
             notifyDataSetChanged();
         }
 
+        public void appendList(List<ParseObject> list) {
+//            shuffle(list);
+            mList.addAll(list);
+            notifyDataSetChanged();
+        }
+
         @Override
         public Fragment getItem(int position) {
+
+            if (mList.size() == position + MARGIN) {
+                load();
+            }
+
             String url = mList.get(position).getString("url");
             ScreenSlidePageFragment fragment = ScreenSlidePageFragment.newInstance(url);
             return fragment;
@@ -86,7 +136,9 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
+
             return mList.size();
+
         }
     }
 }

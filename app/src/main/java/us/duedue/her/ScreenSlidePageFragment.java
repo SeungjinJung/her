@@ -7,8 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.SimpleBitmapDisplayer;
 import com.parse.ParseObject;
+
 
 /**
  * Created by jack on 15. 8. 14.
@@ -37,10 +41,20 @@ public class ScreenSlidePageFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(
                 R.layout.page, container, false);
 
-        ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
+        try {
+            ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
 
-        ImageLoader imageLoader = ImageLoader.getInstance();
-        imageLoader.displayImage(mUrl, imageView);
-        return rootView;
+            ImageLoader imageLoader = ImageLoader.getInstance();
+            DisplayImageOptions options = new DisplayImageOptions.Builder()
+                    .imageScaleType(ImageScaleType.EXACTLY_STRETCHED)
+                    .showImageOnFail(R.drawable.ic_launcher)
+                    .build();
+            imageLoader.displayImage(mUrl, imageView, options);
+            return rootView;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.print("error===");
+            return rootView;
+        }
     }
 }
