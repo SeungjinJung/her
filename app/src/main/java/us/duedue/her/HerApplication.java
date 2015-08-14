@@ -1,14 +1,18 @@
-package com.parse.her;
+package us.duedue.her;
 
 import android.app.Application;
+import android.util.Log;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.parse.Parse;
 import com.parse.ParseACL;
-import com.parse.ParseObject;
+import com.parse.ParseException;
+import com.parse.ParseInstallation;
+import com.parse.ParsePush;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 public class HerApplication extends Application {
 
@@ -25,6 +29,7 @@ public class HerApplication extends Application {
 		 * Fill in this section with your Parse credentials
 		 */
 		Parse.initialize(this, "cavYia03mw7CpyRZ8KJ9z3dnsRlbdaGdY2X4DdAM", "aswkqB7rQCBp0Shb7HxWr6GVT1VPnSBbVuvqQhQQ");
+        ParseInstallation.getCurrentInstallation().saveInBackground();
 
 		/*
 		 * This app lets an anonymous user create and save photos of meals
@@ -69,6 +74,18 @@ public class HerApplication extends Application {
 				.build();
 
 		ImageLoader.getInstance().init(config);
+
+		// enable push
+		ParsePush.subscribeInBackground("", new SaveCallback() {
+			@Override
+			public void done(ParseException e) {
+				if (e == null) {
+					Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
+				} else {
+					Log.e("com.parse.push", "failed to subscribe for push", e);
+				}
+			}
+		});
 	}
 
 }

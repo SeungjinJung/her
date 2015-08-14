@@ -1,4 +1,4 @@
-package com.parse.her;
+package us.duedue.her;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -45,6 +45,7 @@ public class MainActivity extends FragmentActivity {
             @Override
             protected List<ParseObject> doInBackground(Void... params) {
                 ParseQuery<ParseObject> query = ParseQuery.getQuery("images");
+
                 try {
                     return query.find();
                 } catch (ParseException e) {

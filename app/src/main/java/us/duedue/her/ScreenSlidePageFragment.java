@@ -1,4 +1,4 @@
-package com.parse.her;
+package us.duedue.her;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
